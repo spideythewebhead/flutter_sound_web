@@ -16,7 +16,7 @@
  * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const VERSION = '9.4.10'
+const VERSION = '9.4.11'
 
 
 const VERBOSE = 0;
