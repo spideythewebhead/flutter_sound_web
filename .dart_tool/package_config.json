@@ -45,7 +45,7 @@
     },
     {
       "name": "flutter_sound_platform_interface",
-      "rootUri": "file:///Volumes/mac-J/larpoux/.pub-cache/hosted/pub.dev/flutter_sound_platform_interface-9.4.12",
+      "rootUri": "file:///Volumes/mac-J/larpoux/.pub-cache/hosted/pub.dev/flutter_sound_platform_interface-9.4.13",
       "packageUri": "lib/",
       "languageVersion": "3.3"
     },
@@ -182,7 +182,7 @@
       "languageVersion": "3.3"
     }
   ],
-  "generated": "2024-05-29T12:51:42.007239Z",
+  "generated": "2024-06-02T14:46:14.594842Z",
   "generator": "pub",
   "generatorVersion": "3.4.0-282.3.beta",
   "flutterRoot": "file:///Volumes/mac-J/larpoux/flutter",
