@@ -16,7 +16,7 @@
  * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const PLAYER_VERSION = '9.4.18'
+const PLAYER_VERSION = '9.4.19'
 
 function newPlayerInstance(aCallback, callbackTable) { return new FlutterSoundPlayer(aCallback, callbackTable); }
 
