@@ -26,6 +26,28 @@ import 'package:flutter_sound_web/flutter_sound_player_web.dart';
 import 'package:flutter_sound_web/flutter_sound_recorder_web.dart';
 import 'package:flutter/foundation.dart';
 
+var mime_types = [
+  'audio/webm\;codecs=opus', // defaultCodec,
+  'audio/aac', // aacADTS, //*
+  'audio/opus\;codecs=opus', // opusOGG, // 'audio/ogg' 'audio/opus'
+  'audio/x-caf', // opusCAF,
+  'audio/mpeg', // mp3, //*
+  'audio/ogg\;codecs=vorbis', // vorbisOGG,// 'audio/ogg' // 'audio/vorbis'
+  'audio/pcm', // pcm16,
+  'audio/wav\;codecs=1', // pcm16WAV,
+  'audio/aiff', // pcm16AIFF,
+  'audio/x-caf', // pcm16CAF,
+  'audio/x-flac', // flac, // 'audio/flac'
+  'audio/mp4', // aacMP4, //*
+  'audio/AMR', // amrNB, //*
+  'audio/AMR-WB', // amrWB, //*
+  'audio/pcm', // pcm8,
+  'audio/pcm', // pcmFloat32,
+  'audio/webm\;codecs=pcm', // pcmWebM,
+  'audio/webm\;codecs=opus', // opusWebM,
+  'audio/webm\;codecs=vorbis', // vorbisWebM
+];
+
 class ImportJsLibraryWeb {
   /// Injects the library by its [url]
   static Future<void> import(String url) {

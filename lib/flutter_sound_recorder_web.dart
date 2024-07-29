@@ -20,21 +20,18 @@
 library flutter_sound;
 
 import 'dart:async';
-//import 'dart:html' as html;
-
-//import 'package:meta/meta.dart';
 import 'package:flutter_sound_platform_interface/flutter_sound_platform_interface.dart';
 import 'package:flutter_sound_platform_interface/flutter_sound_recorder_platform_interface.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'dart:typed_data';
 import 'package:logger/logger.dart' show Level;
-//import 'dart:web_audio';
 import 'dart:html';
-//import 'package:audio_session/audio_session.dart';
 import 'package:js/js.dart';
 import 'dart:html' as html;
 import 'dart:web_audio';
-//import 'package:web/web.dart';
+import 'flutter_sound_media_recorder_web.dart';
+import 'flutter_sound_web.dart';
+
 //========================================  JS  ===============================================================
 
 @JS('newRecorderInstance')
@@ -56,9 +53,6 @@ class FlutterSoundRecorder {
   @JS('setAudioFocus')
   external void setAudioFocus(
       int focus, int category, int mode, int? audioFlags, int device);
-
-  @JS('isEncoderSupported')
-  external bool isEncoderSupported(int codec);
 
   @JS('setSubscriptionDuration')
   external void setSubscriptionDuration(int duration);
@@ -132,9 +126,7 @@ List<Function> callbackTable = [
 /// The web implementation of [FlutterSoundRecorderPlatform].
 ///
 /// This class implements the `package:FlutterSoundPlayerPlatform` functionality for the web.
-class FlutterSoundRecorderWeb
-    extends FlutterSoundRecorderPlatform //implements FlutterSoundRecorderCallback
-{
+class FlutterSoundRecorderWeb extends FlutterSoundRecorderPlatform {
   /// Registers this class as the default instance of [FlutterSoundRecorderPlatform].
   static void registerWith(Registrar registrar) {
     FlutterSoundRecorderPlatform.instance = FlutterSoundRecorderWeb();
@@ -149,6 +141,8 @@ class FlutterSoundRecorderWeb
   StreamSubscription<Event>? sub;
   MediaStreamAudioSourceNode? source;
   ScriptProcessorNode? audioProcessor;
+  FlutterSoundMediaRecorderWeb? mediaRecorderWeb;
+  RecorderState _recorderState = RecorderState.isStopped;
 
 //================================================================================================================
 
@@ -159,6 +153,36 @@ class FlutterSoundRecorderWeb
     num sampleRate = audioCtx!.sampleRate!;
     return sampleRate.floor();
   }
+
+  @override
+  Future<bool> isEncoderSupported(
+    FlutterSoundRecorderCallback callback, {
+    required Codec codec,
+  }) async {
+    if (codec == Codec.pcmFloat32 || codec == Codec.pcm16) {
+      return true;
+    }
+
+    var r = MediaRecorder.isTypeSupported(mime_types[codec.index]);
+    if (r)
+      callback.log(Level.debug, 'mime_types[codec] encoder is supported');
+    else
+      callback.log(Level.debug, 'mime_types[codec] encoder is NOT supported');
+    return r;
+  }
+
+  @override
+  void requestData(
+    FlutterSoundRecorderCallback callback,
+  ) {
+    if (mediaRecorderWeb != null) {
+      mediaRecorderWeb!.requestData(callback);
+    }
+  }
+
+  /// The current state of the Recorder
+  @override
+  RecorderState get recorderState => RecorderState.isStopped; // TODO
 
   @override
   Future<void>? resetPlugin(
@@ -200,20 +224,13 @@ class FlutterSoundRecorderWeb
       audioCtx!.close();
       audioCtx = null;
     }
+    if (mediaRecorderWeb != null) {
+      mediaRecorderWeb!.stopRecorder(callback);
+      mediaRecorderWeb = null;
+    }
     int slotno = findSession(callback);
     _slots[slotno]!.releaseFlautoRecorder();
     _slots[slotno] = null;
-  }
-
-  @override
-  Future<bool> isEncoderSupported(
-    FlutterSoundRecorderCallback callback, {
-    required Codec codec,
-  }) async {
-    if ((codec == Codec.pcm16) || (codec == Codec.pcmFloat32)) {
-      return true;
-    }
-    return getWebSession(callback)!.isEncoderSupported(codec.index);
   }
 
   @override
@@ -224,100 +241,154 @@ class FlutterSoundRecorderWeb
     getWebSession(callback)!.setSubscriptionDuration(duration!.inMilliseconds);
   }
 
+  Future<void> startRecorderToStreamCodec(
+    FlutterSoundRecorderCallback callback, {
+    //String? path,
+    required Codec codec,
+    StreamSink<Uint8List>? toStream,
+    StreamSink<List<Float32List>>? toStreamFloat32,
+    StreamSink<List<Int16List>>? toStreamInt16,
+    AudioSource? audioSource,
+    Duration timeSlice = Duration.zero,
+    int sampleRate = 16000,
+    int numChannels = 1,
+    int bitRate = 16000,
+    int bufferSize = 8192,
+    bool enableVoiceProcessing = false,
+  }) async {
+    mediaRecorderWeb = FlutterSoundMediaRecorderWeb();
+    mediaRecorderWeb!.startRecorderToStreamCodec(
+      callback,
+      codec: codec!,
+      toStream: toStream,
+      //toStreamFloat32: toStreamFloat32,
+      //toStreamInt16: toStreamInt16,
+      audioSource: audioSource,
+      timeSlice: timeSlice,
+      //sampleRate: sampleRate,
+      numChannels: numChannels,
+      bitRate: bitRate,
+      bufferSize: bufferSize,
+    );
+  }
+
+  Future<void> startRecorderToStream(
+    FlutterSoundRecorderCallback callback, {
+    //String? path,
+    required Codec codec,
+    StreamSink<Uint8List>? toStream,
+    StreamSink<List<Float32List>>? toStreamFloat32,
+    StreamSink<List<Int16List>>? toStreamInt16,
+    AudioSource? audioSource,
+    Duration timeSlice = Duration.zero,
+    int sampleRate = 16000,
+    int numChannels = 1,
+    int bitRate = 16000,
+    int bufferSize = 8192,
+    bool enableVoiceProcessing = false,
+  }) async {
+    if (codec != Codec.pcm16 && codec != Codec.pcmFloat32) {
+      return startRecorderToStreamCodec(
+        callback,
+        codec: codec!,
+        toStream: toStream,
+        //toStreamFloat32: toStreamFloat32,
+        //toStreamInt16: toStreamInt16,
+        audioSource: audioSource,
+        timeSlice: timeSlice,
+        bitRate: bitRate,
+        //sampleRate: sampleRate,
+        numChannels: numChannels,
+        bufferSize: bufferSize,
+      );
+    }
+    if (toStream != null) {
+      numChannels = 1;
+    }
+    callback.log(Level.debug, 'Start Recorder to Stream');
+    AudioDestinationNode dest = audioCtx!.destination!;
+    final html.MediaStream stream = await html.window.navigator.mediaDevices!
+        .getUserMedia({'video': false, 'audio': true});
+    source = audioCtx!.createMediaStreamSource(stream);
+    audioProcessor =
+        audioCtx!.createScriptProcessor(bufferSize, numChannels, 1);
+    Stream<AudioProcessingEvent> audioStream = audioProcessor!.onAudioProcess;
+    sub = audioStream.listen(
+      (event) {
+        List<Int16List> bi = [];
+        List<Float32List> bf = [];
+        for (int channel = 0; channel < numChannels; ++channel) {
+          Float32List buf = event!.inputBuffer!.getChannelData(channel);
+          int ln = buf.length;
+          if (codec ==
+              Codec
+                  .pcmFloat32) // Actually, we do not handle the case where toStream is specified. This can be done if necessary
+          {
+            assert(toStreamFloat32 != null);
+            bf.add(buf);
+          } else if (codec == Codec.pcm16 && toStreamInt16 != null) {
+            Int16List bufi = Int16List(ln);
+            for (int i = 0; i < ln; ++i) {
+              bufi[i] = (buf[i] * 32768).floor();
+            }
+            bi.add(bufi);
+            //toStreamInt16.add(bufi);
+          } else if (codec == Codec.pcm16 && toStream != null) {
+            Uint8List bufu = Uint8List(ln * 2);
+            for (int i = 0; i < ln; ++i) {
+              int x = (buf[i] * 32768).floor();
+              bufu[2 * i + 1] = x >> 8;
+              bufu[2 * i] = x & 0xff;
+            }
+            toStream.add(bufu);
+          }
+        }
+        if (codec ==
+            Codec
+                .pcmFloat32) // Actually, we do not handle the case where toStream is specified. This can be done if necessary
+        {
+          toStreamFloat32!.add(bf);
+        } else if (codec == Codec.pcm16 && toStreamInt16 != null) {
+          toStreamInt16.add(bi);
+        }
+      },
+    );
+//    callback.log(Level.debug, 'audio event ');
+    source!.connectNode(audioProcessor!);
+    audioProcessor!.connectNode(dest); // Why is it necessary ?
+    callback.startRecorderCompleted(RecorderState.isRecording.index, true);
+  }
+
   @override
   Future<void> startRecorder(
     FlutterSoundRecorderCallback callback, {
     String? path,
-    int? sampleRate,
-    int numChannels = 1,
-    int? bitRate,
-    int bufferSize = 8192,
-    bool enableVoiceProcessing = false,
     Codec? codec,
     StreamSink<Uint8List>? toStream,
     StreamSink<List<Float32List>>? toStreamFloat32,
     StreamSink<List<Int16List>>? toStreamInt16,
     AudioSource? audioSource,
+    Duration timeSlice = Duration.zero,
+    int sampleRate = 16000,
+    int numChannels = 1,
+    int bitRate = 16000,
+    int bufferSize = 8192,
+    bool enableVoiceProcessing = false,
   }) async {
+    mediaRecorderWeb = null;
     if (toStream != null || toStreamFloat32 != null || toStreamInt16 != null) {
-      if (toStream != null) {
-        numChannels = 1;
-      }
-      callback.log(Level.debug, 'Start Recorder to Stream');
-      AudioDestinationNode dest = audioCtx!.destination!;
-      final html.MediaStream stream = await html.window.navigator.mediaDevices!
-          .getUserMedia({'video': false, 'audio': true});
-      source = audioCtx!.createMediaStreamSource(stream);
-      audioProcessor =
-          audioCtx!.createScriptProcessor(bufferSize, numChannels, 1);
-      Stream<AudioProcessingEvent> audioStream = audioProcessor!.onAudioProcess;
-      sub = audioStream.listen(
-        (event) {
-          List<Int16List> bi = [];
-          List<Float32List> bf = [];
-          for (int channel = 0; channel < numChannels; ++channel) {
-            Float32List buf = event!.inputBuffer!.getChannelData(channel);
-            int ln = buf.length;
-            if (codec ==
-                Codec
-                    .pcmFloat32) // Actually, we do not handle the case where toStream is specified. This can be done if necessary
-            {
-              assert(toStreamFloat32 != null);
-              bf.add(buf);
-            } else if (codec == Codec.pcm16 && toStreamInt16 != null) {
-              Int16List bufi = Int16List(ln);
-              for (int i = 0; i < ln; ++i) {
-                bufi[i] = (buf[i] * 32768).floor();
-              }
-              bi.add(bufi);
-              //toStreamInt16.add(bufi);
-            } else if (codec == Codec.pcm16 && toStream != null) {
-              Uint8List bufu = Uint8List(ln * 2);
-              for (int i = 0; i < ln; ++i) {
-                int x = (buf[i] * 32768).floor();
-                bufu[2 * i + 1] = x >> 8;
-                bufu[2 * i] = x & 0xff;
-              }
-              toStream.add(bufu);
-            }
-          }
-          if (codec ==
-              Codec
-                  .pcmFloat32) // Actually, we do not handle the case where toStream is specified. This can be done if necessary
-          {
-            toStreamFloat32!.add(bf);
-          } else if (codec == Codec.pcm16 && toStreamInt16 != null) {
-            toStreamInt16.add(bi);
-          }
-        },
+      return startRecorderToStream(
+        callback,
+        codec: codec!,
+        toStream: toStream,
+        toStreamFloat32: toStreamFloat32,
+        toStreamInt16: toStreamInt16,
+        audioSource: audioSource,
+        timeSlice: timeSlice,
+        sampleRate: sampleRate,
+        numChannels: numChannels,
+        bufferSize: bufferSize,
       );
-      //sub = onAudioProcess(audioProcessor!).listen ((Event event) {
-      //Float32List datain = event.inputBuffer!.getChannelData(0);
-
-      //StreamSubscription<Event> sub = audioStream!.listen((event) {
-      //sub = onAudioProcess(audioProcessor!).listen ((Event event) {
-      //Float32List datain = event.inputBuffer!.getChannelData(0);
-      //Float32List dataout = event.outputBuffer!.getChannelData(0);
-      callback.log(Level.debug, 'audio event ');
-
-      //audioProcessor.addEventListener('audioprocess', (AudioProcessingEvent event)
-      //{
-      //  Float32List data = event.inputBuffer!.getChannelData(0);
-      //  callback.log(Level.debug, 'audio event ');
-      //});
-      //source.connectNode(audioProcessor);
-      //audioProcessor.connect(audioCtx.destination);
-      //audioStarted = true;
-//      AudioWorkletNode worketNode = AudioWorkletNode(audioCtx, 'flutter_sound_worklet');
-//      worketNode.addEventListener('audioprocess', (Event event)
-//      {
-      //Float32List data = event.inputBuffer!.getChannelData(0);
-//        callback.log(Level.debug, 'audio event ');
-//      });
-
-      source!.connectNode(audioProcessor!);
-      audioProcessor!.connectNode(dest); // Why is it necessary ?
-      callback.startRecorderCompleted(RecorderState.isRecording.index, true);
     } else {
       assert(codec != Codec.pcmFloat32 && codec != Codec.pcm16);
       getWebSession(callback)!.startRecorder(
@@ -331,6 +402,7 @@ class FlutterSoundRecorderWeb
         toStream != null,
         audioSource!.index,
       );
+      _recorderState = RecorderState.isRecording;
     }
   }
 
@@ -350,34 +422,44 @@ class FlutterSoundRecorderWeb
       audioProcessor!.disconnect();
       audioProcessor = null;
     }
-    //audioCtx!.close(); // Not sure!
-    FlutterSoundRecorder? session = getWebSession(callback);
-    if (session != null)
-      session.stopRecorder();
-    else
-      callback.log(Level.debug, 'Recorder already stopped');
+    if (mediaRecorderWeb != null) {
+      await mediaRecorderWeb!.stopRecorder(callback);
+      mediaRecorderWeb = null;
+    } else {
+      FlutterSoundRecorder? session = getWebSession(callback);
+      if (session != null)
+        session.stopRecorder();
+      else
+        callback.log(Level.debug, 'Recorder already stopped');
+    }
   }
 
   @override
   Future<void> pauseRecorder(
     FlutterSoundRecorderCallback callback,
   ) async {
-    if (sub != null) {
+    if (mediaRecorderWeb != null) {
+      return mediaRecorderWeb!.pauseRecorder(callback);
+    } else if (sub != null) {
       audioCtx!.suspend();
     } else {
       getWebSession(callback)!.pauseRecorder();
     }
+    _recorderState = RecorderState.isPaused;
   }
 
   @override
   Future<void> resumeRecorder(
     FlutterSoundRecorderCallback callback,
   ) async {
-    if (sub != null) {
+    if (mediaRecorderWeb != null) {
+      return mediaRecorderWeb!.resumeRecorder(callback);
+    } else if (sub != null) {
       audioCtx!.resume();
     } else {
       getWebSession(callback)!.resumeRecorder();
     }
+    _recorderState = RecorderState.isRecording;
   }
 
   @override

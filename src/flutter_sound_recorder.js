@@ -16,7 +16,7 @@
  * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const RECORDER_VERSION = '9.8.1'
+const RECORDER_VERSION = '9.9.0'
 
 const IS_RECORDER_PAUSED = 1;
 const IS_RECORDER_RECORDING = 2;
@@ -83,21 +83,6 @@ class FlutterSoundRecorder {
 
         setAudioFocus(focus, category, mode, audioFlags, device) {
                 this.callbackTable[CB_recorder_log](this.callback, DBG, 'setAudioFocus');
-        }
-
-
-        isEncoderSupported(codec) {
-                /*
-                                for (var i in mime_types)
-                                {
-                                }
-                */
-                var r = MediaRecorder.isTypeSupported(mime_types[codec]);
-                if (r)
-                        this.callbackTable[CB_recorder_log](this.callback, DBG, 'mime_types[codec] encoder is supported');
-                else
-                        this.callbackTable[CB_recorder_log](this.callback, DBG, 'mime_types[codec] encoder is NOT supported');
-                return r;
         }
 
 
@@ -329,15 +314,15 @@ class FlutterSoundRecorder {
                                                                 var fileReader = new FileReader();
                                                                 xhr.open("GET", url, true);
                                                                 xhr.responseType = "arraybuffer";
-                        
-                        
+
+
                                                                 xhr.addEventListener("load", function ()
                                                                 {
                                                                         if (xhr.status === 200)
                                                                         {
                                                                                 // Create a blob from the response
                                                                                 blob = new Blob([xhr.response], {type: "audio/webm\;codecs=opus"});
-                        
+
                                                                                 // onload needed since Google Chrome doesn't support addEventListener for FileReader
                                                                                 fileReader.onload = function (evt)
                                                                                 {
