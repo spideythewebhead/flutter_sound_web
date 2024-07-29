@@ -142,7 +142,7 @@ class FlutterSoundRecorderWeb extends FlutterSoundRecorderPlatform {
   MediaStreamAudioSourceNode? source;
   ScriptProcessorNode? audioProcessor;
   FlutterSoundMediaRecorderWeb? mediaRecorderWeb;
-  RecorderState _recorderState = RecorderState.isStopped;
+  //RecorderState _recorderState = RecorderState.isStopped;
 
 //================================================================================================================
 
@@ -259,7 +259,7 @@ class FlutterSoundRecorderWeb extends FlutterSoundRecorderPlatform {
     mediaRecorderWeb = FlutterSoundMediaRecorderWeb();
     mediaRecorderWeb!.startRecorderToStreamCodec(
       callback,
-      codec: codec!,
+      codec: codec,
       toStream: toStream,
       //toStreamFloat32: toStreamFloat32,
       //toStreamInt16: toStreamInt16,
@@ -290,7 +290,7 @@ class FlutterSoundRecorderWeb extends FlutterSoundRecorderPlatform {
     if (codec != Codec.pcm16 && codec != Codec.pcmFloat32) {
       return startRecorderToStreamCodec(
         callback,
-        codec: codec!,
+        codec: codec,
         toStream: toStream,
         //toStreamFloat32: toStreamFloat32,
         //toStreamInt16: toStreamInt16,
@@ -314,7 +314,7 @@ class FlutterSoundRecorderWeb extends FlutterSoundRecorderPlatform {
         audioCtx!.createScriptProcessor(bufferSize, numChannels, 1);
     Stream<AudioProcessingEvent> audioStream = audioProcessor!.onAudioProcess;
     sub = audioStream.listen(
-      (event) {
+      (AudioProcessingEvent event) {
         List<Int16List> bi = [];
         List<Float32List> bf = [];
         for (int channel = 0; channel < numChannels; ++channel) {
@@ -402,7 +402,7 @@ class FlutterSoundRecorderWeb extends FlutterSoundRecorderPlatform {
         toStream != null,
         audioSource!.index,
       );
-      _recorderState = RecorderState.isRecording;
+      //_recorderState = RecorderState.isRecording;
     }
   }
 
@@ -445,7 +445,7 @@ class FlutterSoundRecorderWeb extends FlutterSoundRecorderPlatform {
     } else {
       getWebSession(callback)!.pauseRecorder();
     }
-    _recorderState = RecorderState.isPaused;
+    //_recorderState = RecorderState.isPaused;
   }
 
   @override
@@ -459,7 +459,7 @@ class FlutterSoundRecorderWeb extends FlutterSoundRecorderPlatform {
     } else {
       getWebSession(callback)!.resumeRecorder();
     }
-    _recorderState = RecorderState.isRecording;
+    //_recorderState = RecorderState.isRecording;
   }
 
   @override

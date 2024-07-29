@@ -19,13 +19,13 @@
 import 'dart:async';
 import 'package:flutter_sound_platform_interface/flutter_sound_platform_interface.dart';
 import 'package:flutter_sound_platform_interface/flutter_sound_recorder_platform_interface.dart';
-import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-//import 'dart:typed_data';
+//import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'dart:typed_data';
 import 'package:logger/logger.dart' show Level;
 import 'package:web/web.dart' as web;
 //import 'dart:html';
 //import 'package:js/js.dart' as js;
-import 'dart:html' as html;
+//import 'dart:html' as html;
 //import 'dart:web_audio';
 //import 'flutter_sound_recorder_web.dart';
 //import 'dart:js';
@@ -40,7 +40,6 @@ class FlutterSoundMediaRecorderWeb {
   FlutterSoundRecorderCallback? callback;
   var recordedChunks = [];
 
-  @override
   void requestData(
     FlutterSoundRecorderCallback callback,
   ) {
@@ -73,12 +72,12 @@ class FlutterSoundMediaRecorderWeb {
 
   void dataAvailable(web.Event event) async {
     if (event is web.BlobEvent) {
-      callback!.log!(Level.debug, 'BlobEvent');
+      callback!.log(Level.debug, 'BlobEvent');
       var jsArrayBuffer = await event.data.arrayBuffer().toDart;
       var byteBuffer = jsArrayBuffer.toDart.asUint8List(0);
       streamSink!.add(byteBuffer);
     } else {
-      callback!.log!(Level.debug, 'Unexpected event');
+      callback!.log(Level.debug, 'Unexpected event');
     }
   }
 
@@ -97,7 +96,7 @@ class FlutterSoundMediaRecorderWeb {
     var t = true.toJS;
     web.MediaStreamConstraints contraints =
         web.MediaStreamConstraints(audio: t);
-    final web.MediaStream stream = await web.window.navigator.mediaDevices!
+    final web.MediaStream stream = await web.window.navigator.mediaDevices
         .getUserMedia(contraints)
         .toDart; // The mic
     web.MediaRecorderOptions options = web.MediaRecorderOptions(
@@ -106,8 +105,8 @@ class FlutterSoundMediaRecorderWeb {
     );
     mediaRecorder = new web.MediaRecorder(stream, options);
     streamSink = toStream;
-    int toto = mediaRecorder!.audioBitsPerSecond!;
-    String titi = mediaRecorder!.mimeType!;
+    //int toto = mediaRecorder!.audioBitsPerSecond!;
+    //String titi = mediaRecorder!.mimeType!;
 
     mediaRecorder!.ondataavailable = dataAvailable.toJS;
     mediaRecorder!.onstart = start.toJS;
@@ -126,7 +125,6 @@ class FlutterSoundMediaRecorderWeb {
     callback!.startRecorderCompleted(RecorderState.isRecording.index, true);
   }
 
-  @override
   Future<void> stopRecorder(
     FlutterSoundRecorderCallback callback,
   ) async {
@@ -134,14 +132,12 @@ class FlutterSoundMediaRecorderWeb {
     mediaRecorder!.stop();
   }
 
-  @override
   Future<void> pauseRecorder(
     FlutterSoundRecorderCallback callback,
   ) async {
     mediaRecorder!.pause();
   }
 
-  @override
   Future<void> resumeRecorder(
     FlutterSoundRecorderCallback callback,
   ) async {
