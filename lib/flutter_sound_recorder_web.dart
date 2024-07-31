@@ -113,9 +113,6 @@ List<Function> callbackTable = [
   allowInterop((FlutterSoundRecorderCallback cb, int state, bool success) {
     cb.openRecorderCompleted(state, success);
   }),
-  allowInterop((FlutterSoundRecorderCallback cb, int state, bool success) {
-    cb.closeRecorderCompleted(state, success);
-  }),
   allowInterop((FlutterSoundRecorderCallback cb, int level, String msg) {
     cb.log(Level.values[level], msg);
   }),
