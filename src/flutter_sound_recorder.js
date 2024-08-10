@@ -16,7 +16,7 @@
  * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const RECORDER_VERSION = '9.10.1'
+const RECORDER_VERSION = '9.10.2'
 
 const IS_RECORDER_PAUSED = 1;
 const IS_RECORDER_RECORDING = 2;
@@ -75,7 +75,7 @@ class FlutterSoundRecorder {
                 this.deleteObjects();
                 this.localObjects = [];
 
-                this.callbackTable[CB_closeRecorderCompleted](this.callback, IS_RECORDER_STOPPED, true);
+                //this.callbackTable[CB_closeRecorderCompleted](this.callback, IS_RECORDER_STOPPED, true);
                 this.callbackTable[CB_recorder_log](this.callback, DBG, 'JS:<--- releaseFlautoRecorder');
         }
 

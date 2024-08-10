@@ -16,7 +16,7 @@
  * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const PLAYER_VERSION = '9.10.1'
+const PLAYER_VERSION = '9.10.2'
 
 function newPlayerInstance(aCallback, callbackTable) { return new FlutterSoundPlayer(aCallback, callbackTable); }
 
@@ -64,7 +64,7 @@ class FlutterSoundPlayer {
 
         releaseMediaPlayer() {
                 this.status = IS_PLAYER_STOPPED;
-                this.callbackTable[CB_closePlayerCompleted](this.callback, this.getPlayerState(), true);
+                //this.callbackTable[CB_closePlayerCompleted](this.callback, this.getPlayerState(), true);
                 return this.getPlayerState();
         }
 
