@@ -16,7 +16,7 @@
  * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const PLAYER_VERSION = '9.10.0'
+const PLAYER_VERSION = '9.10.1'
 
 function newPlayerInstance(aCallback, callbackTable) { return new FlutterSoundPlayer(aCallback, callbackTable); }
 
@@ -33,8 +33,7 @@ const CB_pausePlayerCompleted = 5;
 const CB_resumePlayerCompleted = 6;
 const CB_stopPlayerCompleted = 7;
 const CB_openPlayerCompleted = 8;
-const CB_closePlayerCompleted = 9;
-const CB_player_log = 10;
+const CB_player_log = 9;
 
 var instanceNumber = 1;
 

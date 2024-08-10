@@ -16,7 +16,7 @@
  * along with Flutter-Sound.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const RECORDER_VERSION = '9.10.0'
+const RECORDER_VERSION = '9.10.1'
 
 const IS_RECORDER_PAUSED = 1;
 const IS_RECORDER_RECORDING = 2;
@@ -32,8 +32,7 @@ const CB_pauseRecorderCompleted = 3;
 const CB_resumeRecorderCompleted = 4;
 const CB_stopRecorderCompleted = 5;
 const CB_openRecorderCompleted = 6;
-const CB_closeRecorderCompleted = 7;
-const CB_recorder_log = 8;
+const CB_recorder_log = 7;
 
 class FlutterSoundRecorder {
         static newInstance(aCallback, callbackTable) { return new FlutterSoundRecorder(aCallback, callbackTable); }
