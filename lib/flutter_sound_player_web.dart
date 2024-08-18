@@ -112,6 +112,9 @@ class FlutterSoundPlayer {
   @JS('setVolume')
   external int setVolume(double? volume);
 
+  @JS('setVolumePan')
+  external int setVolumePan(double? volume, double? pan);
+
   @JS('setSpeed')
   external int setSpeed(double speed);
 

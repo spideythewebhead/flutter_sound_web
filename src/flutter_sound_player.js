@@ -355,6 +355,29 @@ class FlutterSoundPlayer {
                 return this.getPlayerState();
         }
 
+        setVolumePan(volume, pan) {
+                this.callbackTable[CB_player_log](this.callback, DBG, '---> setVolumePan()');
+            
+                // Set the latent volume
+                this.latentVolume = volume;
+                this.latentPan = pan;
+            
+                // If howl instance exists, set volume and pan
+                if (this.howl != null) {
+                    this.howl.volume(volume);
+            
+                    // Set panning; if it's a stereo sound, use stereo, otherwise use pos for 3D
+                    if (typeof this.howl.stereo === 'function') {
+                        this.howl.stereo(pan);  // For stereo sounds
+                    } else if (typeof this.howl.pos === 'function') {
+                        this.howl.pos(pan, 0, 0);  // For 3D spatial sounds, you might want to adjust other coordinates as needed
+                    }
+                }
+            
+                this.callbackTable[CB_player_log](this.callback, DBG, '<--- setVolumePan()');
+                return this.getPlayerState();
+            }
+            
 
         setSpeed(speed) {
                 this.callbackTable[CB_player_log](this.callback, DBG, '---> setSpeed()');
