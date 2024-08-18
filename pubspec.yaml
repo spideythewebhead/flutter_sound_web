@@ -25,8 +25,8 @@ flutter:
   - src/flutter_sound_recorder.js
 
 dependencies:
-  flutter_sound_platform_interface: 9.10.5
-#    path: ../flutter_sound_platform_interface # Flutter Sound Dir
+  flutter_sound_platform_interface: # 9.10.5
+    path: ../flutter_sound_platform_interface # Flutter Sound Dir
   flutter:
     sdk: flutter
   logger: ^2.0.2
