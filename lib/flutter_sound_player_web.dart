@@ -381,7 +381,7 @@ class FlutterSoundPlayerWeb
 
   Future<int> setVolumePan(FlutterSoundPlayerCallback callback,
       {double? volume, double? pan}) async {
-    return getWebSession(callback)!.setVolumePan(volume,pan);
+    return getWebSession(callback)!.setVolumePan(volume, pan);
   }
 
   Future<int> setSpeed(FlutterSoundPlayerCallback callback,
