@@ -58,10 +58,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_sound_platform_interface
-      sha256: a529366cfbb344842e696e9c9d5ffc53f457f59937fd2e827ce7a8896bf7da79
+      sha256: cfb6f758c27e2482146886e2e2a96573e8a30e9f756c7e38595a1fa55813d1b5
       url: "https://pub.dev"
     source: hosted
-    version: "9.12.7"
+    version: "9.12.8"
   flutter_test:
     dependency: "direct dev"
     description: flutter
