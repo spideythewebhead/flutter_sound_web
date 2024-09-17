@@ -135,11 +135,12 @@ String _libraryUrl(String url, String pluginName) {
 }
 
 void importJsLibrary({required String url, required String flutterPluginName}) {
-  //if (flutterPluginName == null) {
-  //        ImportJsLibrary.import(url);
-  //} else {
-  ImportJsLibrary.import(_libraryUrl(url, flutterPluginName));
-  //}
+  ImportJsLibrary.import(_libraryUrl(url, flutterPluginName)).then((value) {
+    --FlutterSoundPlugin._numberOfScripts;
+    if (FlutterSoundPlugin._numberOfScripts == 0) {
+      FlutterSoundPlugin.ScriptLoaded.complete();
+    }
+  });
 }
 
 bool isJsLibraryImported(String url, {required String flutterPluginName}) {
@@ -155,6 +156,9 @@ bool isJsLibraryImported(String url, {required String flutterPluginName}) {
 /// This class implements the `package:FlutterSoundPlayerPlatform` functionality for the web.
 class FlutterSoundPlugin //extends FlutterSoundPlatform
 {
+  static int _numberOfScripts = 4;
+  static Completer ScriptLoaded = Completer();
+
   /// Registers this class as the default instance of [FlutterSoundPlatform].
   static void registerWith(Registrar registrar) {
     FlutterSoundPlayerWeb.registerWith(registrar);
