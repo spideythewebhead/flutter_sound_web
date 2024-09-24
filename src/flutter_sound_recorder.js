@@ -22,9 +22,6 @@ const IS_RECORDER_PAUSED = 1;
 const IS_RECORDER_RECORDING = 2;
 const IS_RECORDER_STOPPED = 0;
 
-const audioContext = new AudioContext();
-
-
 function newRecorderInstance(aCallback, callbackTable) { return new FlutterSoundRecorder(aCallback, callbackTable); }
 
 
