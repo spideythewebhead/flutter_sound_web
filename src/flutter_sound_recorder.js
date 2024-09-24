@@ -22,6 +22,9 @@ const IS_RECORDER_PAUSED = 1;
 const IS_RECORDER_RECORDING = 2;
 const IS_RECORDER_STOPPED = 0;
 
+const audioContext = new AudioContext();
+
+
 function newRecorderInstance(aCallback, callbackTable) { return new FlutterSoundRecorder(aCallback, callbackTable); }
 
 
@@ -181,9 +184,9 @@ class FlutterSoundRecorder {
                 mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 me.mediaStream = mediaStream;
 
-                const audioContext = new AudioContext();
-                const _audioSource = audioContext.createMediaStreamSource(mediaStream);
-                const analyser = audioContext.createAnalyser();
+                this.audioContext = new AudioContext();
+                const _audioSource = this.audioContext.createMediaStreamSource(mediaStream);
+                const analyser = this.audioContext.createAnalyser();
                 // todo: review if this values are right (set to mimic a behaviour closest to that of Android)
                 analyser.fftSize = 512;
                 analyser.minDecibels = -110;
@@ -367,6 +370,11 @@ class FlutterSoundRecorder {
                         this.mediaStream.getTracks().forEach(track => track.stop());
                         this.mediaStream = null;
                 }
+                  // Close the audioContext if it exists
+                if (this.audioContext != null) {
+                        this.audioContext.close();
+                        this.audioContext = null;
+                }
                 this.callbackTable[CB_recorder_log](this.callback, DBG, 'JS:<--- stop()');
         }
 
@@ -383,6 +391,11 @@ class FlutterSoundRecorder {
                 if (this.mediaStream != null) {
                         this.mediaStream.getTracks().forEach(track => track.stop());
                         this.mediaStream = null;
+                }
+                  // Close the audioContext if it exists
+                if (this.audioContext != null) {
+                        this.audioContext.close();
+                        this.audioContext = null;
                 }
                 this.callbackTable[CB_recorder_log](this.callback, DBG, "JS:<--- stopRecorder");
         }
