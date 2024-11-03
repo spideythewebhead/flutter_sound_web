@@ -78,6 +78,7 @@ class FlutterSoundPlayer {
                         ({
                                 src: [path],
                                 format: tabFormat[codec],
+                                html5: true,
 
                                 onload: function () {
                                         me.callbackTable[CB_player_log](me.callback, DBG, 'onload');
